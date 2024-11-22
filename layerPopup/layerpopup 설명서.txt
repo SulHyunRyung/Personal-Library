@@ -1,0 +1,93 @@
+html에서 일반적으로 자주 사용하는 layer-popup 입니다.
+(글보다 이미지가 편하시면 첨부 이미지 설명을 보셔도 됩니다. 동일한 내용)
+
+사용법은 <head> 안에 
+
+    <link rel="stylesheet" href="layerPopup.css">
+    <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+    <script src="layerPopup.js"></script>
+
+CSS, JS를 경로에 맞게 선언 후에  (jquery cdn은 기존에 있으면 생략 가능)
+
+    <div id="layer_container">
+        <p class="layer_title">제목</p>
+        <div class="comment_place">
+            <p>팝업 내용<br><br>내용2</p>
+            <input class="ok_btn" type="button" value="확인">
+        </div>
+    </div>
+
+
+
+통상적으로 해당 코드를 <body> 내 최상위에 선언해주시면 됩니다.
+
+body에 다른 스타일이 겹치면 수정 후에 사용하시면 되고,
+
+html의 크기가 작아 위치가 이상 할 때는 css 파일 내에서
+
+
+body {
+    width: 100%;
+    /* min-height: 100vh; */
+    position: relative;
+    display: inline-block;
+}
+
+body의 스타일에 min-height: 100vh; 부분의 주석을 해제 해주시면 됩니다.
+
+
+html 코드 내에서 제목, 팝업 내용의 내용을 바꾸면
+해당 컨텐츠의 내용이 적용됩니다.
+
+전체 창 사이즈 같은 경우는 높이는 기본적으로 내용에 따라 늘어나고,
+너비는 고정으로 400px로 설정되어 있지만
+
+변경 하시려면
+
+#layer_container {
+>>    width: 400px; <<
+    height: auto;
+    display: inline-block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 1px solid #000;
+    box-shadow: #aaa 1px 1px 1px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+해당 css 스타일에서 witdh만 원하는대로 변경하시면 됩니다.
+
+기본적으로 page load 당시에 정 가운데 위치하도록 되어있지만,
+변경을 원하시면
+top, left의 수치를 변경하시면 됩니다.
+
+추가적으로 원하는 요소 클릭 시 해당 팝업을 출력하고 싶으실 땐
+
+    // $("element").click(function(){
+    //     $("#layer_container").css({"display":"inline-block"});
+    // });
+
+js 파일 내에서 주석 처리되어 있는 해당 부분에
+element를 원하는 요소의 class/id로 설정하고 주석을 해제 해주시고,
+
+
+#layer_container {
+    width: 400px;
+    height: auto;
+    display: inline-block;
+    /* display: none; */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 1px solid #000;
+    box-shadow: #aaa 1px 1px 1px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+css 파일 내에서 해당 태그 스타일에 display: inline-block;를 주석 처리 해주시고
+하단에 있는 display: none의 주석 처리를 해제하시면 됩니다.
