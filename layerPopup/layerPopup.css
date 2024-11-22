@@ -1,0 +1,45 @@
+@charset "UTF-8";
+
+body {
+    width: 100%;
+    position: relative;
+    display: inline-block;
+}
+
+#layer_contanier {
+    width: 400px;
+    height: auto;
+    display: inline-block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, 50%);
+    border: 1px solid #000;
+    box-shadow: #aaa 1px 1px 1px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+#layer_contanier p:not(.comment_place p) {
+    margin: 0;
+    padding: 0 5px;
+}
+
+.layer_title {
+    width: 100%;
+    display: block;;
+    background: rgb(0, 17, 112);
+    color: #fff;
+    font-weight: bold;
+}
+
+
+.ok_btn {
+    display: block;
+    margin: 5px auto;
+    background-color: rgb(0, 17, 112);
+    color: #fff;
+    font-weight: bold;
+    padding: 5px 10px;
+    font-size: 20px;
+}
