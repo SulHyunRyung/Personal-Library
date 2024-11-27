@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8">
+    <meta th:name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta th:name="_csrf" th:content="${_csrf.token}" />
+    <meta th:name="_csrf_header" th:content="${_csrf.headerName}" />
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/textarea-caret-position@3.0.0/index.min.js"></script>
+    <script src="list_event.js"></script>
+
+    <!-- Link to external CSS files -->
+    <link rel="stylesheet" th:href="@{/css/image.css}">
+    <link rel="stylesheet" th:href="@{/css/attach.css}">
+
+    <title>글 작성 페이지</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* General page styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h2 {
+            color: #333;
+            text-align: center;
+            margin-top: 20px;
+            font-size: 24px;
+        }
+
+        /* Section container */
+        .form-section {
+            width: 80%;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Form input styling */
+        form div {
+            margin-bottom: 20px;
+        }
+
+        form p {
+            margin: 0;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 95%;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+
+        #friendList {
+            display: none;
+            list-style: none;
+            border: 1px solid #aaa;
+            width: 200px;
+            position: absolute;
+            background: #fff;
+            padding: 0 m !important;
+            top: 0;
+            left: 0;
+            background: #5b7fff;
+            border-radius: 15px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        #friendList li {
+            width: 100%;
+            padding: 5px;
+            cursor: pointer;
+            display: block;
+            background: #5b7fff;
+            color: #fff;
+            margin: 0 auto;
+            text-overflow: ellipsis;
+        }
+
+        #friendList li:not(:first-child) {
+            border-top: 1px solid #fff;
+        }
+
+        #friendList li:hover {
+            background: #fff;
+            color: #000;
+            font-weight: bold;
+        }
+
+        /* Image and file upload styling */
+        .image-upload,
+        .attach-upload {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .image-drop,
+        .attach-list {
+            border: 2px dashed #007bff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            text-align: center;
+            color: #777;
+            font-style: italic;
+        }
+
+        /* Button styling */
+        button,
+        input[type="button"] {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            display: block;
+            width: 100px;
+            margin: 0 auto;
+        }
+
+        button:hover,
+        input[type="button"]:hover {
+            background-color: #0056b3;
+        }
+
+        /* Image and file info list styling */
+        .image-list,
+        .attach-list {
+            margin-top: 10px;
+        }
+
+        /* Inline list styling */
+        li {
+            display: inline-block;
+            margin: 5px;
+        }
+
+        /* Footer styling */
+        .footer-container {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 14px;
+            color: #777;
+        }
+    </style>
+</head>
+
+<body>
+    <div th:include="common/header.html"></div>
+
+    <div class="form-section">
+        <h2>글 작성 페이지</h2>
+        <form id="registerForm" action="#" th:action="@{register}" th:object="${boardDTO}" method="POST">
+            <div>
+                <p>제목 :</p>
+                <input type="text" id="boardTitle" th:field="*{boardTitle}" placeholder="제목 입력" maxlength="50">
+            </div>
+            <div>
+                <p>작성자 : </p>
+                <input type="text" th:name="memberId" th:value="${#authentication.name}" maxlength="5" readonly>
+            </div>
+            <div>
+                <p>내용 :</p>
+                <textarea id="msgBox" rows="50" cols="100" id="boardContent" th:field="*{boardContent}"
+                    placeholder="내용 입력" maxlength="1000"></textarea>
+                <ul id="friendList"></ul>
+            </div>
+            <!-- Tooltip for friend suggestions -->
+            <div id="friendTooltip" class="friend-tooltip" style="display: none;"></div>
+            <input type="hidden" th:name="${_csrf.parameterName }" th:value="${_csrf.token }">
+        </form>
+    </div>
+
+    <!-- Image Upload Section -->
+    <div class="image-upload form-section">
+        <h2>이미지 파일 업로드</h2>
+        <p>* 이미지 파일은 최대 3개까지 가능합니다.</p>
+        <p>* 최대 용량은 10MB 입니다.</p>
+        <div class="image-drop">이미지 파일을 드롭</div>
+        <h2>선택한 이미지 파일 :</h2>
+        <div class="image-list"></div>
+    </div>
+
+    <!-- Attach File Upload Section -->
+    <div class="attach-upload form-section">
+        <h2>첨부 파일 업로드</h2>
+        <p>* 첨부 파일은 최대 3개까지 가능합니다.</p>
+        <p>* 최대 용량은 10MB 입니다.</p>
+        <input type="file" id="attachInput" name="files" multiple="multiple">
+        <h2>선택한 첨부 파일 정보 :</h2>
+        <div class="attach-list"></div>
+    </div>
+
+    <!-- Register Button -->
+    <div style="text-align: center; margin-top: 20px;">
+        <button id="registerBoard">등록</button>
+    </div>
+
+    <div class="attachDTOImg-list">
+    </div>
+
+    <div class="attachDTOFile-list">
+    </div>
+
+    <script th:src="@{/js/image.js}"></script>
+    <script th:src="@{/js/attach.js}"></script>
+
+    <div th:include="common/footer.html"></div>
+    <script th:inline="javascript">
+        // Attach CSRF token to AJAX requests
+        $(document).ajaxSend(function (e, xhr, opt) {
+            var token = $("meta[name='_csrf']").attr("content");
+            var header = $("meta[name='_csrf_header']").attr("content");
+            xhr.setRequestHeader(header, token);
+        });
+
+        $(document).ready(function () {
+            // regsiterForm 데이터 전송
+            $('#registerBoard').click(function () {
+                var title = $('#boardTitle').val().trim(); // 문자열의 양 끝 공백 제거
+                var content = $('#boardContent').val().trim();
+
+                if (title === '' || content === '') {
+                    alert("제목과 내용을 모두 입력해주세요.");
+                    return;
+                }
+
+                // form 객체 참조
+                var registerForm = $('#registerForm');
+
+                // attachDTOImg-list의 각 input 태그 접근
+                var i = 0;
+                $('.attachDTOImg-list input[name="attachDTO"]').each(function () {
+                    console.log(this);
+                    // JSON attachDTO 데이터를 object 변경
+                    var attachDTO = JSON.parse($(this).val());
+                    // attachPath input 생성
+                    var inputPath = $('<input>').attr('type', 'hidden')
+                        .attr('name', 'attachList[' + i + '].attachPath');
+                    inputPath.val(attachDTO.attachPath);
+
+                    // attachRealName input 생성
+                    var inputRealName = $('<input>').attr('type', 'hidden')
+                        .attr('name', 'attachList[' + i + '].attachRealName');
+                    inputRealName.val(attachDTO.attachRealName);
+
+                    // attachChgName input 생성
+                    var inputChgName = $('<input>').attr('type', 'hidden')
+                        .attr('name', 'attachList[' + i + '].attachChgName');
+                    inputChgName.val(attachDTO.attachChgName);
+
+                    // attachExtension input 생성
+                    var inputExtension = $('<input>').attr('type', 'hidden')
+                        .attr('name', 'attachList[' + i + '].attachExtension');
+                    inputExtension.val(attachDTO.attachExtension);
+
+                    // form에 태그 추가
+                    registerForm.append(inputPath);
+                    registerForm.append(inputRealName);
+                    registerForm.append(inputChgName);
+                    registerForm.append(inputExtension);
+
+                    i++;
+                });
+
+                // attachDTOFile-list의 각 input 태그 접근
+                $('.attachDTOFile-list input[name="attachDTO"]').each(function () {
+                    console.log(this);
+                    // JSON attachDTO 데이터를 object 변경
+                    var attachDTO = JSON.parse($(this).val());
+                    // attachPath input 생성
+                    var inputPath = $('<input>').attr('type', 'hidden')
+                        .attr('name', 'attachList[' + i + '].attachPath');
+                    inputPath.val(attachDTO.attachPath);
+
+                    // attachRealName input 생성
+                    var inputRealName = $('<input>').attr('type', 'hidden')
+                        .attr('name', 'attachList[' + i + '].attachRealName');
+                    inputRealName.val(attachDTO.attachRealName);
+
+                    // attachChgName input 생성
+                    var inputChgName = $('<input>').attr('type', 'hidden')
+                        .attr('name', 'attachList[' + i + '].attachChgName');
+                    inputChgName.val(attachDTO.attachChgName);
+
+                    // attachExtension input 생성
+                    var inputExtension = $('<input>').attr('type', 'hidden')
+                        .attr('name', 'attachList[' + i + '].attachExtension');
+                    inputExtension.val(attachDTO.attachExtension);
+
+                    // form에 태그 추가
+                    registerForm.append(inputPath);
+                    registerForm.append(inputRealName);
+                    registerForm.append(inputChgName);
+                    registerForm.append(inputExtension);
+
+                    i++;
+                });
+                registerForm.submit();
+            });
+        });
+    </script>
+</body>
+
+</html>
